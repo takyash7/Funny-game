@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#FF6B9D" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Family Candy Hunt - A fun photo recognition game for the whole family!" />
+  <title>🍬 MIVOKSHU </title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — Candy World palette
+       ============================================================ */
+    :root {
+      --candy-pink:    #FF6B9D;
+      --candy-yellow:  #FFD93D;
+      --candy-mint:    #6BCB77;
+      --candy-sky:     #4D96FF;
+      --candy-orange:  #FF9F1C;
+      --candy-purple:  #C77DFF;
+      --candy-white:   #FFFEF0;
+      --candy-dark:    #2D1B69;
+      --candy-cream:   #FFF5E6;
+      --candy-shadow:  rgba(45,27,105,0.18);
+
+      --font-display: 'Fredoka One', 'Comic Sans MS', cursive;
+      --font-body:    'Nunito', 'Arial Rounded MT Bold', sans-serif;
+
+      --radius-xl: 28px;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+
+      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font-body);
+      background: var(--candy-cream);
+      color: var(--candy-dark);
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    body {
+      background: linear-gradient(135deg, #FFE9F3 0%, #FFF5CC 50%, #E9F7FF 100%);
+      min-height: 100dvh;
+    }
+
+    /* ============================================================
+       GOOGLE FONTS FALLBACK (loaded async)
+       ============================================================ */
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+    /* ============================================================
+       SCREEN MANAGEMENT
+       ============================================================ */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100dvh;
+      padding: 16px;
+      animation: screenIn 0.35s var(--ease-bounce);
+    }
+    .screen.active { display: flex; }
+
+    @keyframes screenIn {
+      from { opacity: 0; transform: scale(0.94) translateY(12px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0);    }
+    }
+
+    /* ============================================================
+       HEADER / LOGO
+       ============================================================ */
+    .logo {
+      text-align: center;
+      margin: 24px 0 8px;
+    }
+    .logo-emoji {
+      font-size: clamp(3rem, 12vw, 5rem);
+      line-height: 1;
+      display: block;
+      animation: float 3s ease-in-out infinite;
+    }
+    .logo-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 8vw, 3.2rem);
+      background: linear-gradient(135deg, var(--candy-pink), var(--candy-purple), var(--candy-sky));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+    }
+    .logo-sub {
+      font-size: clamp(0.8rem, 3.5vw, 1rem);
+      color: var(--candy-purple);
+      font-weight: 700;
+      margin-top: 4px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0);    }
+      50%       { transform: translateY(-8px); }
+    }
+
+    /* ============================================================
+       BUTTONS
+       ============================================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 58px;
+      min-width: 180px;
+      padding: 14px 28px;
+      border: none;
+      border-radius: var(--radius-xl);
+      font-family: var(--font-display);
+      font-size: clamp(1rem, 4.5vw, 1.25rem);
+      font-weight: 400;
+      cursor: pointer;
+      transition: transform 0.15s var(--ease-bounce), box-shadow 0.15s ease;
+      box-shadow: 0 6px 0 rgba(0,0,0,0.15), 0 2px 12px var(--candy-shadow);
+      letter-spacing: 0.3px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .btn:active {
+      transform: scale(0.93) translateY(3px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--candy-pink), #FF4D8D);
+      color: #fff;
+    }
+    .btn-success {
+      background: linear-gradient(135deg, var(--candy-mint), #4AB860);
+      color: #fff;
+    }
+    .btn-info {
+      background: linear-gradient(135deg, var(--candy-sky), #3A7FE0);
+      color: #fff;
+    }
+    .btn-warning {
+      background: linear-gradient(135deg, var(--candy-yellow), #F5C000);
+      color: var(--candy-dark);
+    }
+    .btn-danger {
+      background: linear-gradient(135deg, #FF6B6B, #E03A3A);
+      color: #fff;
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.7);
+      color: var(--candy-dark);
+      backdrop-filter: blur(4px);
+    }
+    .btn-sm {
+      min-height: 42px;
+      min-width: 100px;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      border-radius: var(--radius-lg);
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    .btn-row {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+      max-width: 340px;
+      margin: 16px auto 0;
+    }
+
+    /* ============================================================
+       CARD
+       ============================================================ */
+    .card {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius-xl);
+      padding: 20px 22px;
+      box-shadow: 0 8px 32px var(--candy-shadow);
+      width: 100%;
+      max-width: 440px;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      color: var(--candy-purple);
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    /* ============================================================
+       HOME SCREEN
+       ============================================================ */
+    #screen-home {
+      gap: 0;
+    }
+    .member-count-badge {
+      background: var(--candy-purple);
+      color: #fff;
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      margin: 8px 0 4px;
+    }
+    .member-preview-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 10px 4px;
+      max-width: 100%;
+      scrollbar-width: none;
+    }
+    .member-preview-strip::-webkit-scrollbar { display: none; }
+    .preview-avatar {
+      flex-shrink: 0;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--candy-pink);
+      box-shadow: 0 2px 8px var(--candy-shadow);
+    }
+
+    /* ============================================================
+       AGE SELECTOR
+       ============================================================ */
+    .age-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    .age-btn {
+      flex: 1;
+      min-width: 90px;
+      max-width: 120px;
+      padding: 12px 10px;
+      border: 3px solid transparent;
+      border-radius: var(--radius-lg);
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      cursor: pointer;
+      text-align: center;
+      background: rgba(255,255,255,0.6);
+      transition: all 0.2s var(--ease-bounce);
+      box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+    }
+    .age-btn.selected {
+      border-color: var(--candy-pink);
+      background: linear-gradient(135deg, #FFE0EE, #FFD0E6);
+      transform: scale(1.06) translateY(-2px);
+    }
+    .age-btn .age-emoji { font-size: 1.6rem; display: block; }
+    .age-btn .age-label { font-size: 0.75rem; color: var(--candy-dark); font-family: var(--font-body); font-weight: 700; }
+    .age-btn .age-range { font-size: 0.7rem; color: #888; font-family: var(--font-body); }
+
+    /* ============================================================
+       FAMILY MANAGEMENT SCREEN
+       ============================================================ */
+    #screen-family {
+      gap: 12px;
+    }
+    .family-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+      width: 100%;
+      max-width: 460px;
+    }
+    .member-card {
+      background: rgba(255,255,255,0.9);
+      border-radius: var(--radius-lg);
+      padding: 10px 8px;
+      text-align: center;
+      box-shadow: 0 4px 12px var(--candy-shadow);
+      position: relative;
+      animation: cardPop 0.3s var(--ease-bounce);
+    }
+    @keyframes cardPop {
+      from { opacity: 0; transform: scale(0.7); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .member-card img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--candy-yellow);
+    }
+    .member-card .name {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--candy-dark);
+      margin-top: 6px;
+      word-break: break-word;
+      line-height: 1.2;
+    }
+    .member-card .del-btn {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #FF6B6B;
+      color: #fff;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      transition: transform 0.15s;
+    }
+    .member-card .del-btn:active { transform: scale(0.85); }
+
+    /* ADD MEMBER MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(45,27,105,0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-sheet {
+      background: var(--candy-cream);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      padding: 24px 20px 36px;
+      width: 100%;
+      max-width: 480px;
+      animation: slideUp 0.35s var(--ease-bounce);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    .modal-handle {
+      width: 40px;
+      height: 5px;
+      background: #ddd;
+      border-radius: 9px;
+      margin: 0 auto 20px;
+    }
+    .field {
+      margin-bottom: 16px;
+    }
+    .field label {
+      display: block;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: var(--candy-purple);
+      margin-bottom: 6px;
+    }
+    .field input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2.5px solid #e0d7f5;
+      border-radius: var(--radius-lg);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 700;
+      background: #fff;
+      color: var(--candy-dark);
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .field input[type="text"]:focus { border-color: var(--candy-pink); }
+    .image-upload-area {
+      width: 100%;
+      min-height: 130px;
+      border: 3px dashed #C77DFF;
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      background: rgba(199,125,255,0.05);
+      position: relative;
+    }
+    .image-upload-area:hover, .image-upload-area:focus-within {
+      background: rgba(199,125,255,0.12);
+    }
+    .image-upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .image-upload-area .upload-icon { font-size: 2.5rem; }
+    .image-upload-area .upload-text { font-size: 0.9rem; color: var(--candy-purple); font-weight: 700; }
+    .image-preview-wrap {
+      width: 100%;
+      text-align: center;
+    }
+    .image-preview-wrap img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--candy-pink);
+      box-shadow: 0 4px 16px var(--candy-shadow);
+    }
+
+    /* ============================================================
+       GAME SCREEN
+       ============================================================ */
+    #screen-game {
+      padding: 12px;
+      gap: 8px;
+    }
+    .game-hud {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 560px;
+      background: rgba(255,255,255,0.8);
+      border-radius: var(--radius-xl);
+      padding: 10px 18px;
+      box-shadow: 0 4px 16px var(--candy-shadow);
+    }
+    .hud-score {
+      font-family: var(--font-display);
+      font-size: clamp(1.1rem, 5vw, 1.4rem);
+      color: var(--candy-purple);
+    }
+    .hud-level {
+      font-family: var(--font-display);
+      font-size: clamp(0.85rem, 3.5vw, 1rem);
+      color: var(--candy-pink);
+      background: #FFE0EE;
+      border-radius: 999px;
+      padding: 4px 12px;
+    }
+    .hud-lives {
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+    }
+
+    /* TIMER BAR */
+    .timer-container {
+      width: 100%;
+      max-width: 560px;
+      height: 14px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .timer-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--candy-mint), var(--candy-yellow), var(--candy-orange), #FF4444);
+      border-radius: 999px;
+      transition: width 0.1s linear;
+    }
+
+    /* PROMPT BUBBLE */
+    .prompt-bubble {
+      background: linear-gradient(135deg, var(--candy-purple), #9B4FCC);
+      color: #fff;
+      border-radius: var(--radius-xl);
+      padding: 14px 24px;
+      font-family: var(--font-display);
+      font-size: clamp(1.2rem, 6vw, 1.8rem);
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(156,77,255,0.4);
+      animation: promptBounce 0.5s var(--ease-bounce);
+      max-width: 560px;
+      width: 100%;
+    }
+    @keyframes promptBounce {
+      from { transform: scale(0.7); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .prompt-name {
+      color: var(--candy-yellow);
+      font-size: 1.2em;
+    }
+
+    /* PHOTO GRID */
+    .photo-grid {
+      display: grid;
+      gap: clamp(10px, 3vw, 18px);
+      width: 100%;
+      max-width: 560px;
+      justify-items: center;
+    }
+    .photo-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .photo-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .photo-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+    .photo-card {
+      background: rgba(255,255,255,0.9);
+      border-radius: var(--radius-xl);
+      padding: clamp(8px, 2vw, 14px);
+      box-shadow: 0 6px 20px var(--candy-shadow);
+      cursor: pointer;
+      transition: transform 0.15s var(--ease-bounce), box-shadow 0.15s ease;
+      text-align: center;
+      width: 100%;
+      border: 3px solid transparent;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .photo-card:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 12px 28px var(--candy-shadow); }
+    .photo-card:active { transform: scale(0.92); }
+    .photo-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: var(--radius-lg);
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+    .photo-card .photo-name {
+      font-family: var(--font-display);
+      font-size: clamp(0.7rem, 2.8vw, 0.95rem);
+      color: var(--candy-dark);
+      margin-top: 6px;
+      line-height: 1.2;
+    }
+    .photo-card.correct {
+      border-color: var(--candy-mint);
+      background: #E6FAE9;
+      animation: correctPulse 0.6s var(--ease-bounce);
+    }
+    .photo-card.wrong {
+      border-color: #FF6B6B;
+      background: #FFE6E6;
+      animation: shake 0.5s ease;
+    }
+    @keyframes correctPulse {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25%       { transform: translateX(-8px); }
+      75%       { transform: translateX(8px); }
+    }
+
+    /* Moving animation for hard mode */
+    .photo-card.moving {
+      animation: wiggle 2s ease-in-out infinite;
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-2deg) translateY(0); }
+      25%       { transform: rotate(2deg) translateY(-3px); }
+      50%       { transform: rotate(-1deg) translateY(2px); }
+      75%       { transform: rotate(3deg) translateY(-2px); }
+    }
+
+    /* ============================================================
+       CANDY RAIN OVERLAY
+       ============================================================ */
+    #candy-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 200;
+      overflow: hidden;
+    }
+    .candy-particle {
+      position: absolute;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      animation: candyFall linear forwards;
+      top: -60px;
+    }
+    @keyframes candyFall {
+      to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Score popup */
+    .score-popup {
+      position: fixed;
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--candy-mint);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      pointer-events: none;
+      z-index: 300;
+      animation: scoreFloat 1.2s ease forwards;
+    }
+    @keyframes scoreFloat {
+      from { transform: translateY(0) scale(1); opacity: 1; }
+      to   { transform: translateY(-80px) scale(0.7); opacity: 0; }
+    }
+
+    /* ============================================================
+       LEVEL COMPLETE SCREEN
+       ============================================================ */
+    #screen-levelcomplete {
+      justify-content: center;
+      gap: 16px;
+    }
+    .stars-row {
+      display: flex;
+      gap: 12px;
+      font-size: clamp(2.5rem, 12vw, 4.5rem);
+      animation: starsIn 0.8s var(--ease-bounce);
+    }
+    @keyframes starsIn {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .level-score {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 7vw, 2.5rem);
+      color: var(--candy-purple);
+      text-align: center;
+    }
+    .new-best {
+      background: linear-gradient(135deg, var(--candy-yellow), var(--candy-orange));
+      color: var(--candy-dark);
+      border-radius: 999px;
+      padding: 8px 24px;
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      animation: pulse 0.8s var(--ease-bounce);
+    }
+    @keyframes pulse {
+      from { transform: scale(0.6); }
+      to   { transform: scale(1); }
+    }
+
+    /* ============================================================
+       SETTINGS / CONTROLS ROW
+       ============================================================ */
+    .controls-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.8);
+      font-size: 1.3rem;
+      cursor: pointer;
+      box-shadow: 0 3px 10px var(--candy-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s var(--ease-bounce);
+    }
+    .icon-btn:active { transform: scale(0.85); }
+    .icon-btn.muted { opacity: 0.45; }
+
+    /* ============================================================
+       TOAST
+       ============================================================ */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--candy-dark);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: var(--radius-xl);
+      font-weight: 700;
+      font-size: 0.95rem;
+      z-index: 400;
+      transition: transform 0.35s var(--ease-bounce);
+      max-width: 90vw;
+      text-align: center;
+      pointer-events: none;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ============================================================
+       COMBO BANNER
+       ============================================================ */
+    .combo-banner {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      background: linear-gradient(135deg, var(--candy-orange), #FF4D00);
+      color: #fff;
+      padding: 10px 28px;
+      border-radius: 999px;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      z-index: 350;
+      box-shadow: 0 6px 24px rgba(255,100,0,0.4);
+      transition: transform 0.3s var(--ease-bounce);
+      pointer-events: none;
+    }
+    .combo-banner.show { transform: translateX(-50%) scale(1); }
+
+    /* ============================================================
+       BACKGROUND THEMES
+       ============================================================ */
+    body.theme-space {
+      background: linear-gradient(135deg, #0B0B2E 0%, #1A1A4E 50%, #0B1A3B 100%);
+    }
+    body.theme-space .photo-card { background: rgba(30,30,80,0.9); }
+    body.theme-space .game-hud  { background: rgba(30,30,80,0.8); }
+
+    body.theme-candy {
+      background: linear-gradient(135deg, #FF9FE5 0%, #FFC0F0 50%, #FFD6FF 100%);
+    }
+    body.theme-forest {
+      background: linear-gradient(135deg, #A8E063 0%, #56AB2F 50%, #1A6B0A 100%);
+    }
+    body.theme-ocean {
+      background: linear-gradient(135deg, #00C6FF 0%, #0072FF 50%, #004AB5 100%);
+    }
+
+    /* ============================================================
+       PROGRESS BAR (family screen)
+       ============================================================ */
+    .progress-bar-wrap {
+      width: 100%;
+      max-width: 340px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 999px;
+      height: 12px;
+      overflow: hidden;
+      margin: 6px auto;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--candy-pink), var(--candy-purple));
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+
+    /* ============================================================
+       RESPONSIVE TWEAKS
+       ============================================================ */
+    @media (max-width: 360px) {
+      .photo-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }
+      .photo-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 600px) {
+      .photo-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 180px)); }
+      .photo-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 150px)); }
+      .photo-grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 130px)); }
+    }
+    @media (orientation: landscape) and (max-height: 500px) {
+      .logo-emoji { font-size: 2.2rem; }
+      .logo-title { font-size: 1.6rem; }
+      #screen-home { flex-direction: row; flex-wrap: wrap; align-content: flex-start; padding: 8px; }
+    }
+
+    /* ============================================================
+       HIGH CONTRAST MODE
+       ============================================================ */
+    body.high-contrast {
+      --candy-cream: #000;
+      background: #000 !important;
+      color: #fff;
+    }
+    body.high-contrast .card,
+    body.high-contrast .photo-card,
+    body.high-contrast .game-hud { background: #111; border: 2px solid #fff; }
+    body.high-contrast .photo-card .photo-name { color: #fff; }
+
+    /* ============================================================
+       UNLOCK SCREEN
+       ============================================================ */
+    .unlock-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 360px;
+    }
+    .unlock-item {
+      background: rgba(255,255,255,0.85);
+      border-radius: var(--radius-lg);
+      padding: 12px 8px;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--candy-dark);
+      box-shadow: 0 4px 10px var(--candy-shadow);
+    }
+    .unlock-item.locked { opacity: 0.4; filter: grayscale(1); }
+    .unlock-item .unlock-emoji { font-size: 2rem; display: block; }
+    .unlock-item .unlock-label { margin-top: 4px; line-height: 1.2; }
+    .candy-count {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      color: var(--candy-orange);
+      background: rgba(255,255,255,0.8);
+      border-radius: 999px;
+      padding: 6px 18px;
+      box-shadow: 0 2px 8px var(--candy-shadow);
+    }
+  </style>
+</head>
+<body>
+
+<!-- CANDY PARTICLES OVERLAY -->
+<div id="candy-overlay"></div>
+
+<!-- COMBO BANNER -->
+<div class="combo-banner" id="combo-banner">🔥 COMBO x<span id="combo-num">2</span></div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ================================================================
+     SCREEN: HOME
+     ================================================================ -->
+<div class="screen active" id="screen-home">
+  <div class="logo">
+    <span class="logo-emoji">🍬</span>
+    <div class="logo-title">Family Candy Hunt</div>
+    <div class="logo-sub">Tap the right person!</div>
+  </div>
+
+  <div id="home-member-count" class="member-count-badge">0 family members</div>
+  <div class="member-preview-strip" id="home-preview-strip"></div>
+
+  <!-- Age mode selector -->
+  <div class="card" style="max-width:340px;margin:12px auto 0;">
+    <div class="card-title">Who's Playing? 🎮</div>
+    <div class="age-row">
+      <button class="age-btn selected" data-mode="easy" onclick="selectMode(this,'easy')">
+        <span class="age-emoji">🐣</span>
+        <strong>Easy</strong>
+        <span class="age-range">Age 2–5</span>
+      </button>
+      <button class="age-btn" data-mode="medium" onclick="selectMode(this,'medium')">
+        <span class="age-emoji">🎒</span>
+        <strong>Medium</strong>
+        <span class="age-range">Age 6–10</span>
+      </button>
+      <button class="age-btn" data-mode="hard" onclick="selectMode(this,'hard')">
+        <span class="age-emoji">🚀</span>
+        <strong>Hard</strong>
+        <span class="age-range">Age 11–15</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="gotoScreen('screen-family')">👨‍👩‍👧 Manage Family</button>
+    <button class="btn btn-success" id="start-btn" onclick="startGame()">🎮 Play Game!</button>
+    <button class="btn btn-info btn-sm" onclick="gotoScreen('screen-unlocks')">🎁 Rewards</button>
+  </div>
+
+  <div class="controls-row" style="margin-top:12px;">
+    <button class="icon-btn" id="music-btn" onclick="toggleMusic()" title="Toggle Music">🎵</button>
+    <button class="icon-btn" id="sfx-btn" onclick="toggleSFX()" title="Toggle SFX">🔊</button>
+    <button class="icon-btn" id="speech-btn" onclick="toggleSpeech()" title="Toggle Voice">🗣️</button>
+    <button class="icon-btn" id="hc-btn" onclick="toggleHighContrast()" title="High Contrast">👁️</button>
+  </div>
+
+  <div style="margin-top:10px;font-size:0.8rem;color:#aaa;font-weight:700;">
+    🏆 Best: <span id="home-best">0</span> pts
+  </div>
+
+<div class="card" style="max-width:340px;margin-top:12px;">
+<div class="card-title">🎙 Voice Settings</div>
+
+<label>Voice</label>
+<select id="voice-select" onchange="settings.selectedVoice=this.value;saveStorage(STORAGE_KEYS.settings,settings);" style="width:100%;padding:10px;margin:6px 0;"></select>
+
+<label>Volume</label>
+<input type="range" min="0" max="1" step="0.1" value="1" id="voice-volume"
+oninput="settings.voiceVolume=this.value;saveStorage(STORAGE_KEYS.settings,settings);" style="width:100%;">
+
+<label>Speed</label>
+<input type="range" min="0.5" max="2" step="0.1" value="1" id="voice-rate"
+oninput="settings.voiceRate=this.value;saveStorage(STORAGE_KEYS.settings,settings);" style="width:100%;">
+
+<label>Pitch</label>
+<input type="range" min="0" max="2" step="0.1" value="1" id="voice-pitch"
+oninput="settings.voicePitch=this.value;saveStorage(STORAGE_KEYS.settings,settings);" style="width:100%;">
+
+<button class="btn btn-info btn-sm" onclick="speak('Hello, welcome to Family Candy Hunt!')" style="margin-top:10px;">Test Voice</button>
+</div>
+
+<script>
+function loadVoiceOptions(){
+ if(!window.speechSynthesis) return;
+ const select=document.getElementById('voice-select');
+ if(!select) return;
+ const voices=speechSynthesis.getVoices();
+ select.innerHTML='';
+ voices.forEach(v=>{
+   const o=document.createElement('option');
+   o.value=v.name;
+   o.textContent=v.name+' ('+v.lang+')';
+   if(v.name===settings.selectedVoice) o.selected=true;
+   select.appendChild(o);
+ });
+}
+speechSynthesis.onvoiceschanged=loadVoiceOptions;
+setTimeout(loadVoiceOptions,1000);
+</script>
+
+</div>
+
+<!-- ================================================================
+     SCREEN: FAMILY MANAGEMENT
+     ================================================================ -->
+<div class="screen" id="screen-family">
+  <div style="width:100%;max-width:460px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <button class="icon-btn" onclick="gotoScreen('screen-home')">⬅️</button>
+      <div>
+        <div style="font-family:var(--font-display);font-size:1.4rem;color:var(--candy-purple);">Your Family 👨‍👩‍👧‍👦</div>
+        <div style="font-size:0.8rem;color:#888;font-weight:700;" id="family-count-label">0 / 30 members</div>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="family-progress" style="width:0%"></div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;margin:12px 0;" onclick="openAddModal()">
+      ➕ Add Family Member
+    </button>
+
+    <div class="family-grid" id="family-grid">
+      <!-- Member cards inserted here -->
+    </div>
+
+    <div id="empty-family-msg" style="text-align:center;padding:40px 20px;color:#bbb;">
+      <div style="font-size:3rem;">👨‍👩‍👧</div>
+      <div style="font-weight:700;margin-top:8px;">No family members yet!<br>Add your first one above 👆</div>
+    </div>
+
+    <button class="btn btn-danger btn-sm" style="width:100%;margin-top:16px;" onclick="deleteAll()">
+      🗑️ Delete All Members
+    </button>
+  </div>
+</div>
+
+<!-- ================================================================
+     SCREEN: GAME
+     ================================================================ -->
+<div class="screen" id="screen-game">
+  <div class="game-hud">
+    <div class="hud-score">🍬 <span id="score-display">0</span></div>
+    <div class="hud-level" id="level-display">Level 1</div>
+    <div class="hud-lives" id="lives-display">❤️❤️❤️</div>
+  </div>
+
+  <div class="timer-container" id="timer-container" style="display:none;">
+    <div class="timer-bar" id="timer-bar" style="width:100%;"></div>
+  </div>
+
+  <div class="prompt-bubble" id="prompt-bubble">
+    Find <span class="prompt-name" id="prompt-name">Grandma</span>!
+  </div>
+
+  <div class="photo-grid cols-2" id="photo-grid"></div>
+
+  <div class="controls-row" style="margin-top:auto;padding-top:8px;">
+    <button class="icon-btn" id="game-music-btn" onclick="toggleMusic()" title="Music">🎵</button>
+    <button class="icon-btn" id="game-sfx-btn" onclick="toggleSFX()" title="SFX">🔊</button>
+    <button class="btn btn-ghost btn-sm" onclick="quitGame()">🏠 Quit</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     SCREEN: LEVEL COMPLETE
+     ================================================================ -->
+<div class="screen" id="screen-levelcomplete">
+  <div class="logo">
+    <span class="logo-emoji">🎉</span>
+    <div class="logo-title" id="lc-title">Level Complete!</div>
+  </div>
+
+  <div class="stars-row" id="stars-row">⭐⭐⭐</div>
+
+  <div class="card" style="text-align:center;max-width:340px;">
+    <div class="level-score">Score: <span id="lc-score">0</span></div>
+    <div id="lc-best-badge" class="new-best" style="display:none;margin:10px auto;width:fit-content;">
+      🏆 New Best Score!
+    </div>
+    <div style="margin-top:10px;font-size:0.9rem;color:#888;font-weight:700;">
+      +<span id="lc-candies">5</span> 🍬 earned!
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="nextLevel()">▶️ Next Level</button>
+    <button class="btn btn-ghost btn-sm" onclick="gotoScreen('screen-home')">🏠 Home</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     SCREEN: GAME OVER
+     ================================================================ -->
+<div class="screen" id="screen-gameover">
+  <div class="logo">
+    <span class="logo-emoji">😅</span>
+    <div class="logo-title" style="font-size:clamp(1.4rem,7vw,2.5rem);">Game Over!</div>
+  </div>
+
+  <div class="card" style="text-align:center;max-width:340px;">
+    <div class="level-score">Final Score: <span id="go-score">0</span></div>
+    <div style="color:#888;font-weight:700;margin-top:6px;">Reached Level <span id="go-level">1</span></div>
+    <div id="go-best-badge" class="new-best" style="display:none;margin:10px auto;width:fit-content;">
+      🏆 New Best Score!
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">🔄 Play Again</button>
+    <button class="btn btn-ghost btn-sm" onclick="gotoScreen('screen-home')">🏠 Home</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     SCREEN: UNLOCKS / REWARDS
+     ================================================================ -->
+<div class="screen" id="screen-unlocks">
+  <div style="width:100%;max-width:380px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <button class="icon-btn" onclick="gotoScreen('screen-home')">⬅️</button>
+      <div style="font-family:var(--font-display);font-size:1.4rem;color:var(--candy-purple);">Rewards 🎁</div>
+    </div>
+    <div style="text-align:center;margin-bottom:16px;">
+      <span class="candy-count">🍬 <span id="candy-total">0</span> Candies</span>
+    </div>
+
+    <div style="font-family:var(--font-display);font-size:1rem;color:var(--candy-pink);margin-bottom:8px;">🌈 Backgrounds</div>
+    <div class="unlock-grid" id="unlocks-grid"></div>
+
+    <div style="font-family:var(--font-display);font-size:1rem;color:var(--candy-pink);margin:14px 0 8px;">🔊 Sound Packs</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:360px;" id="sound-unlocks"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     ADD MEMBER MODAL
+     ================================================================ -->
+<div class="modal-overlay" id="add-modal" style="display:none;" onclick="closeModalOutside(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="card-title">Add Family Member 👤</div>
+
+    <div class="field">
+      <label>Name *</label>
+      <input type="text" id="member-name" placeholder="e.g. Grandma, Papa…" maxlength="25" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label>Photo *</label>
+      <div class="image-upload-area" id="upload-area">
+        <input type="file" id="photo-input" accept="image/*" onchange="handleImageUpload(event)" />
+        <span class="upload-icon">📷</span>
+        <span class="upload-text">Tap to upload photo</span>
+      </div>
+      <div class="image-preview-wrap" id="preview-wrap" style="display:none;margin-top:10px;">
+        <img id="preview-img" src="" alt="Preview" />
+      </div>
+    </div>
+
+    
+<div class="field">
+<label>Voice Recording (Optional)</label>
+<button type="button" class="btn btn-info btn-sm" onclick="startRecording()">🎤 Record 5s Voice</button>
+<audio id="voice-preview" controls style="width:100%;margin-top:8px;"></audio>
+</div>
+
+<div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-success" style="flex:1;" onclick="saveMember()">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     JAVASCRIPT
+     ================================================================ -->
+<script>
+// ================================================================
+// STORAGE UTILITIES
+// ================================================================
+const STORAGE_KEYS = {
+  members: 'fch_members',
+  highScore: 'fch_highscore',
+  settings: 'fch_settings',
+  candies: 'fch_candies',
+  unlocks: 'fch_unlocks',
+};
+
+function loadStorage(key, def) {
+  try {
+    const val = localStorage.getItem(key);
+    return val !== null ? JSON.parse(val) : def;
+  } catch {
+    return def;
+  }
+}
+
+function saveStorage(key, val) {
+  try {
+    localStorage.setItem(key, JSON.stringify(val));
+    return true;
+  } catch (e) {
+    // LocalStorage full — remove oldest member photo to free space
+    if (e.name === 'QuotaExceededError') {
+      showToast('⚠️ Storage nearly full! Removed oldest photo.');
+      const members = loadStorage(STORAGE_KEYS.members, []);
+      if (members.length > 0) {
+        members[0].image = ''; // clear image data
+        localStorage.setItem(STORAGE_KEYS.members, JSON.stringify(members));
+      }
+    }
+    return false;
+  }
+}
+
+// ================================================================
+// STATE
+// ================================================================
+let members = loadStorage(STORAGE_KEYS.members, []);
+let settings = loadStorage(STORAGE_KEYS.settings, {
+  music: true, sfx: true, speech: true, highContrast: false, mode: 'easy', theme: 'default',
+  voiceVolume: 1,
+  voiceRate: 1,
+  voicePitch: 1,
+  selectedVoice: ''
+});
+let highScore = loadStorage(STORAGE_KEYS.highScore, 0);
+let totalCandies = loadStorage(STORAGE_KEYS.candies, 0);
+let unlocks = loadStorage(STORAGE_KEYS.unlocks, []);
+
+// Game state
+let gameState = {
+  level: 1,
+  score: 0,
+  lives: 3,
+  combo: 0,
+  comboMultiplier: 1,
+  targetMember: null,
+  timerInterval: null,
+  timerValue: 100,
+  active: false,
+  answered: false,
+  funnyTimers: [],
+};
+
+let pendingImage = null; // base64 string for new member
+let recordedVoice = null;
+let mediaRecorder=null;
+let audioChunks=[];
+
+// ================================================================
+// AUDIO ENGINE (Web Audio API — no external files needed)
+// ================================================================
+let audioCtx = null;
+let bgmNode = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function beep(freq, type, duration, gain, delay = 0) {
+  if (!settings.sfx) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    gainNode.gain.setValueAtTime(gain, ctx.currentTime + delay);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + duration + 0.05);
+  } catch {}
+}
+
+function playCorrectSound() {
+  if (!settings.sfx) return;
+  // Happy ascending chime
+  beep(523, 'sine', 0.12, 0.4);
+  beep(659, 'sine', 0.12, 0.4, 0.1);
+  beep(784, 'sine', 0.2,  0.5, 0.2);
+  beep(1047,'sine', 0.25, 0.5, 0.35);
+}
+
+function playWrongSound() {
+  if (!settings.sfx) return;
+  // Descending boing
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.5);
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.65);
+  } catch {}
+}
+
+function playCelebrationSound() {
+  if (!settings.sfx) return;
+  const notes = [523,587,659,698,784,880,988,1047];
+  notes.forEach((f, i) => beep(f, 'sine', 0.18, 0.4, i * 0.07));
+}
+
+function playButtonClick() {
+  if (!settings.sfx) return;
+  beep(880, 'sine', 0.06, 0.2);
+}
+
+// Background music using Web Audio (playful procedural melody)
+let bgmPlaying = false;
+let bgmTimeout = null;
+
+const bgmMelody = [
+  [523, 0.2], [659, 0.2], [784, 0.2], [880, 0.2],
+  [784, 0.2], [659, 0.4], [523, 0.2], [440, 0.2],
+  [494, 0.2], [523, 0.2], [587, 0.2], [659, 0.4],
+  [523, 0.2], [587, 0.2], [659, 0.2], [784, 0.4],
+];
+let bgmIndex = 0;
+
+function playBGMNote() {
+  if (!settings.music || !bgmPlaying) return;
+  try {
+    const ctx = getAudioCtx();
+    const [freq, dur] = bgmMelody[bgmIndex % bgmMelody.length];
+    bgmIndex++;
+
+    // Main melody
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0.07, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur * 0.9);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur);
+
+    // Harmony (octave below)
+    const osc2 = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    osc2.connect(g2); g2.connect(ctx.destination);
+    osc2.type = 'triangle';
+    osc2.frequency.value = freq / 2;
+    g2.gain.setValueAtTime(0.04, ctx.currentTime);
+    g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur * 0.8);
+    osc2.start(ctx.currentTime);
+    osc2.stop(ctx.currentTime + dur);
+
+    bgmTimeout = setTimeout(playBGMNote, dur * 1000 * 0.95);
+  } catch {}
+}
+
+function startBGM() {
+  if (bgmPlaying) return;
+  bgmPlaying = true;
+  playBGMNote();
+}
+
+function stopBGM() {
+  bgmPlaying = false;
+  if (bgmTimeout) clearTimeout(bgmTimeout);
+}
+
+// ================================================================
+// SPEECH SYNTHESIS
+// ================================================================
+function speak(text) {
+  if (!settings.speech) return;
+  if (!window.speechSynthesis) return;
+
+  window.speechSynthesis.cancel();
+
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = Number(settings.voiceRate || 1);
+  utt.pitch = Number(settings.voicePitch || 1);
+  utt.volume = Number(settings.voiceVolume || 1);
+
+  const voices = window.speechSynthesis.getVoices();
+
+  if (settings.selectedVoice) {
+    const voice = voices.find(v => v.name === settings.selectedVoice);
+    if (voice) utt.voice = voice;
+  }
+
+  window.speechSynthesis.speak(utt);
+}
+
+// ================================================================
+// SCREEN NAVIGATION
+// ================================================================
+function gotoScreen(id) {
+  playButtonClick();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'screen-home') refreshHome();
+  if (id === 'screen-family') renderFamilyGrid();
+  if (id === 'screen-unlocks') renderUnlocks();
+  window.scrollTo(0, 0);
+}
+
+// ================================================================
+// HOME SCREEN
+// ================================================================
+function refreshHome() {
+  const countEl = document.getElementById('home-member-count');
+  const n = members.length;
+  countEl.textContent = `${n} family member${n !== 1 ? 's' : ''}`;
+
+  const strip = document.getElementById('home-preview-strip');
+  strip.innerHTML = '';
+  members.slice(0, 12).forEach(m => {
+    if (m.image) {
+      const img = document.createElement('img');
+      img.className = 'preview-avatar';
+      img.src = m.image;
+      img.alt = m.name;
+      strip.appendChild(img);
+    }
+  });
+
+  document.getElementById('home-best').textContent = highScore;
+  document.getElementById('candy-total').textContent = totalCandies;
+
+  // Update music/sfx icon states
+  document.getElementById('music-btn').classList.toggle('muted', !settings.music);
+  document.getElementById('sfx-btn').classList.toggle('muted', !settings.sfx);
+  document.getElementById('speech-btn').classList.toggle('muted', !settings.speech);
+  document.getElementById('hc-btn').style.opacity = settings.highContrast ? '1' : '0.6';
+
+  // Apply BGM
+  if (settings.music) startBGM(); else stopBGM();
+}
+
+function selectMode(el, mode) {
+  document.querySelectorAll('.age-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  settings.mode = mode;
+  saveStorage(STORAGE_KEYS.settings, settings);
+}
+
+// ================================================================
+// SETTINGS TOGGLES
+// ================================================================
+function toggleMusic() {
+  settings.music = !settings.music;
+  saveStorage(STORAGE_KEYS.settings, settings);
+  if (settings.music) startBGM(); else stopBGM();
+  const btns = document.querySelectorAll('#music-btn,#game-music-btn');
+  btns.forEach(b => b.classList.toggle('muted', !settings.music));
+  showToast(settings.music ? '🎵 Music On!' : '🔇 Music Off');
+}
+
+function toggleSFX() {
+  settings.sfx = !settings.sfx;
+  saveStorage(STORAGE_KEYS.settings, settings);
+  const btns = document.querySelectorAll('#sfx-btn,#game-sfx-btn');
+  btns.forEach(b => b.classList.toggle('muted', !settings.sfx));
+  if (settings.sfx) beep(880, 'sine', 0.08, 0.2);
+  showToast(settings.sfx ? '🔊 SFX On!' : '🔇 SFX Off');
+}
+
+function toggleSpeech() {
+  settings.speech = !settings.speech;
+  saveStorage(STORAGE_KEYS.settings, settings);
+  document.getElementById('speech-btn').classList.toggle('muted', !settings.speech);
+  showToast(settings.speech ? '🗣️ Voice On!' : '🔇 Voice Off');
+  if (settings.speech) speak('Voice is on!');
+}
+
+function toggleHighContrast() {
+  settings.highContrast = !settings.highContrast;
+  saveStorage(STORAGE_KEYS.settings, settings);
+  document.body.classList.toggle('high-contrast', settings.highContrast);
+  showToast(settings.highContrast ? '👁️ High Contrast On' : '👁️ High Contrast Off');
+}
+
+// ================================================================
+// IMAGE PROCESSING
+// ================================================================
+function resizeImage(file, maxWidth, maxHeight, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxWidth || h > maxHeight) {
+          const ratio = Math.min(maxWidth / w, maxHeight / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error('Image load failed'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('File read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Validate type
+  if (!file.type.startsWith('image/')) {
+    showToast('❌ Please select an image file');
+    return;
+  }
+
+  // Validate size (max 20MB raw)
+  if (file.size > 20 * 1024 * 1024) {
+    showToast('❌ Image too large (max 20MB)');
+    return;
+  }
+
+  try {
+    // Resize to max 400x400, compress to ~50-70KB
+    const b64 = await resizeImage(file, 400, 400, 0.72);
+
+    pendingImage = b64;
+    document.getElementById('preview-img').src = b64;
+    document.getElementById('preview-wrap').style.display = 'block';
+    document.getElementById('upload-area').style.display = 'none';
+  } catch (err) {
+    showToast('⚠️ Could not process image, try another');
+    console.error(err);
+  }
+}
+
+// ================================================================
+// FAMILY MANAGEMENT
+// ================================================================
+function openAddModal() {
+  if (members.length >= 30) {
+    showToast('🚫 Maximum 30 family members reached!');
+    return;
+  }
+  pendingImage = null;
+  document.getElementById('member-name').value = '';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('upload-area').style.display = 'flex';
+  document.getElementById('photo-input').value = '';
+  document.getElementById('add-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('member-name').focus(), 350);
+}
+
+function closeAddModal() {
+  document.getElementById('add-modal').style.display = 'none';
+  pendingImage = null;
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('add-modal')) closeAddModal();
+}
+
+
+async function startRecording(){
+ try{
+   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+   audioChunks=[];
+   mediaRecorder=new MediaRecorder(stream);
+
+   mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+
+   mediaRecorder.onstop=()=>{
+      const blob=new Blob(audioChunks,{type:'audio/webm'});
+      const reader=new FileReader();
+      reader.onloadend=()=>{
+         recordedVoice=reader.result;
+         const p=document.getElementById('voice-preview');
+         if(p) p.src=recordedVoice;
+      };
+      reader.readAsDataURL(blob);
+      stream.getTracks().forEach(t=>t.stop());
+   };
+
+   mediaRecorder.start();
+   showToast('🎤 Recording started (5 sec)');
+   setTimeout(()=>{
+      if(mediaRecorder && mediaRecorder.state!=='inactive') mediaRecorder.stop();
+   },5000);
+ }catch(e){
+   alert('Microphone permission denied.');
+ }
+}
+
+function playVoiceClip(data){
+ if(!data) return false;
+ const a=new Audio(data);
+ a.volume=1;
+ a.play();
+ return true;
+}
+
+function saveMember() {
+  const name = document.getElementById('member-name').value.trim();
+  if (!name) { showToast('📝 Please enter a name!'); return; }
+  if (!pendingImage) { showToast('📷 Please upload a photo!'); return; }
+
+  const member = {
+    id: Date.now().toString(),
+    name,
+    image: pendingImage,
+    voice: recordedVoice,
+  };
+
+  members.push(member);
+  if (!saveStorage(STORAGE_KEYS.members, members)) {
+    members.pop();
+    showToast('⚠️ Storage full! Delete some members first.');
+    return;
+  }
+
+  playCorrectSound();
+  closeAddModal();
+  renderFamilyGrid();
+  showToast(`✅ ${name} added to your family!`);
+}
+
+function deleteMember(id) {
+  members = members.filter(m => m.id !== id);
+  saveStorage(STORAGE_KEYS.members, members);
+  renderFamilyGrid();
+  showToast('🗑️ Member removed');
+}
+
+function deleteAll() {
+  if (!confirm('Delete ALL family members? This cannot be undone!')) return;
+  members = [];
+  saveStorage(STORAGE_KEYS.members, members);
+  renderFamilyGrid();
+  showToast('🗑️ All members deleted');
+}
+
+function renderFamilyGrid() {
+  const grid = document.getElementById('family-grid');
+  const emptyMsg = document.getElementById('empty-family-msg');
+  const label = document.getElementById('family-count-label');
+  const progress = document.getElementById('family-progress');
+
+  label.textContent = `${members.length} / 30 members`;
+  progress.style.width = `${(members.length / 30) * 100}%`;
+
+  if (members.length === 0) {
+    grid.innerHTML = '';
+    emptyMsg.style.display = 'block';
+    return;
+  }
+  emptyMsg.style.display = 'none';
+
+  grid.innerHTML = members.map(m => `
+    <div class="member-card" id="mc-${m.id}">
+      <button class="del-btn" onclick="deleteMember('${m.id}')">✕</button>
+      <img src="${m.image || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'40\' r=\'25\' fill=\'%23ddd\'/%3E%3Cellipse cx=\'50\' cy=\'80\' rx=\'35\' ry=\'22\' fill=\'%23ddd\'/%3E%3C/svg%3E'}"
+           alt="${m.name}" onerror="this.src=''" />
+      <div class="name">${escapeHtml(m.name)}</div>
+    </div>
+  `).join('');
+}
+
+// ================================================================
+// UNLOCKS / REWARDS SCREEN
+// ================================================================
+const UNLOCK_ITEMS = [
+  { id: 'theme_candy',   emoji: '🍬', label: 'Candy World',   cost: 20,  type: 'theme', value: 'candy'   },
+  { id: 'theme_space',   emoji: '🚀', label: 'Space World',   cost: 40,  type: 'theme', value: 'space'   },
+  { id: 'theme_forest',  emoji: '🌲', label: 'Forest World',  cost: 60,  type: 'theme', value: 'forest'  },
+  { id: 'theme_ocean',   emoji: '🌊', label: 'Ocean World',   cost: 80,  type: 'theme', value: 'ocean'   },
+  { id: 'sfx_robot',     emoji: '🤖', label: 'Robot Sounds',  cost: 30,  type: 'sfx',   value: 'robot'   },
+  { id: 'sfx_space',     emoji: '👾', label: 'Space Sounds',  cost: 50,  type: 'sfx',   value: 'space'   },
+];
+
+function renderUnlocks() {
+  document.getElementById('candy-total').textContent = totalCandies;
+  const grid = document.getElementById('unlocks-grid');
+  const soundGrid = document.getElementById('sound-unlocks');
+
+  const themeItems = UNLOCK_ITEMS.filter(u => u.type === 'theme');
+  const sfxItems   = UNLOCK_ITEMS.filter(u => u.type === 'sfx');
+
+  grid.innerHTML = themeItems.map(u => {
+    const owned = unlocks.includes(u.id);
+    const active = settings.theme === u.value;
+    return `
+      <div class="unlock-item ${owned ? '' : 'locked'}" style="${active ? 'border:2.5px solid var(--candy-pink);' : ''}">
+        <span class="unlock-emoji">${u.emoji}</span>
+        <div class="unlock-label">${u.label}</div>
+        ${owned
+          ? `<button class="btn btn-sm ${active ? 'btn-primary' : 'btn-ghost'}" style="min-width:0;padding:6px 10px;margin-top:5px;font-size:0.7rem;" onclick="applyTheme('${u.value}','${u.id}')">${active ? 'Active' : 'Use'}</button>`
+          : `<button class="btn btn-sm btn-warning" style="min-width:0;padding:6px 10px;margin-top:5px;font-size:0.7rem;" onclick="purchaseUnlock('${u.id}')">🍬 ${u.cost}</button>`
+        }
+      </div>`;
+  }).join('');
+
+  soundGrid.innerHTML = sfxItems.map(u => {
+    const owned = unlocks.includes(u.id);
+    return `
+      <div class="unlock-item ${owned ? '' : 'locked'}">
+        <span class="unlock-emoji">${u.emoji}</span>
+        <div class="unlock-label">${u.label}</div>
+        ${owned
+          ? `<div style="color:var(--candy-mint);font-weight:800;margin-top:4px;">✓ Owned</div>`
+          : `<button class="btn btn-sm btn-warning" style="min-width:0;padding:6px 10px;margin-top:5px;font-size:0.7rem;" onclick="purchaseUnlock('${u.id}')">🍬 ${u.cost}</button>`
+        }
+      </div>`;
+  }).join('');
+}
+
+function purchaseUnlock(id) {
+  const item = UNLOCK_ITEMS.find(u => u.id === id);
+  if (!item) return;
+  if (totalCandies < item.cost) {
+    showToast(`🍬 Need ${item.cost} candies! You have ${totalCandies}.`);
+    return;
+  }
+  totalCandies -= item.cost;
+  unlocks.push(id);
+  saveStorage(STORAGE_KEYS.candies, totalCandies);
+  saveStorage(STORAGE_KEYS.unlocks, unlocks);
+  playCorrectSound();
+  showToast(`🎉 Unlocked ${item.label}!`);
+  if (item.type === 'theme') applyTheme(item.value, id);
+  renderUnlocks();
+}
+
+function applyTheme(value, id) {
+  settings.theme = value;
+  saveStorage(STORAGE_KEYS.settings, settings);
+  document.body.className = value === 'default' ? '' : `theme-${value}`;
+  if (settings.highContrast) document.body.classList.add('high-contrast');
+  renderUnlocks();
+}
+
+// ================================================================
+// GAME ENGINE
+// ================================================================
+function getModeConfig() {
+  const lvl = gameState.level;
+  const mode = settings.mode;
+
+  // Base photos count by mode + level
+  let basePhotos = 3;
+  if (mode === 'medium') basePhotos = Math.min(3 + Math.floor(lvl / 2), 6);
+  else if (mode === 'hard') basePhotos = Math.min(3 + Math.floor(lvl / 1.5), 8);
+  else basePhotos = Math.min(3 + Math.floor(lvl / 3), 5); // easy
+
+  basePhotos = Math.min(basePhotos, members.length);
+
+  const timerEnabled = mode !== 'easy' && lvl >= (mode === 'medium' ? 3 : 1);
+  let timerDuration = mode === 'hard' ? Math.max(5, 20 - lvl * 1.5) : Math.max(10, 30 - lvl * 2);
+
+  return {
+    photoCount: basePhotos,
+    timerEnabled,
+    timerDuration: Math.round(timerDuration),
+    moving: mode === 'hard' && lvl >= 4,
+    showNames: mode === 'easy' || (mode === 'medium' && lvl <= 2),
+    lives: mode === 'easy' ? 5 : mode === 'medium' ? 3 : 2,
+  };
+}
+
+function startGame() {
+  if (members.length < 3) {
+    showToast('👨‍👩‍👧 Add at least 3 family members to play!');
+    gotoScreen('screen-family');
+    return;
+  }
+
+  playButtonClick();
+  gameState = {
+    level: 1,
+    score: 0,
+    lives: getModeConfig().lives,
+    combo: 0,
+    comboMultiplier: 1,
+    targetMember: null,
+    timerInterval: null,
+    timerValue: 100,
+    active: true,
+    answered: false,
+    funnyTimers: [],
+  };
+
+  gotoScreen('screen-game');
+  loadLevel();
+}
+
+function loadLevel() {
+  clearGameTimers();
+  gameState.answered = false;
+  const cfg = getModeConfig();
+
+  // Update HUD
+  document.getElementById('score-display').textContent = gameState.score;
+  document.getElementById('level-display').textContent = `Level ${gameState.level}`;
+  updateLivesDisplay();
+
+  // Pick random members for this round
+  const shuffled = shuffle([...members]);
+  const chosen = shuffled.slice(0, cfg.photoCount);
+
+  // Pick target
+  gameState.targetMember = chosen[Math.floor(Math.random() * chosen.length)];
+
+  // Update prompt
+  document.getElementById('prompt-name').textContent = gameState.targetMember.name;
+
+  // Speak prompt
+  if(!playVoiceClip(gameState.targetMember.voice)){ speak(`Find ${gameState.targetMember.name}!`); }
+
+  // Build photo grid
+  const grid = document.getElementById('photo-grid');
+  const colClass = cfg.photoCount <= 2 ? 'cols-2' :
+                   cfg.photoCount <= 3 ? 'cols-2' :
+                   cfg.photoCount <= 4 ? 'cols-2' :
+                   cfg.photoCount <= 6 ? 'cols-3' : 'cols-4';
+
+  grid.className = `photo-grid ${colClass}`;
+  grid.innerHTML = shuffle(chosen).map(m => `
+    <div class="photo-card ${cfg.moving ? 'moving' : ''}"
+         onclick="handleAnswer('${m.id}')"
+         ontouchend="handleAnswer('${m.id}')"
+         id="pc-${m.id}"
+         role="button"
+         aria-label="${m.name}">
+      <img src="${m.image}" alt="${m.name}" loading="lazy"
+           onerror="this.src=''" />
+      ${cfg.showNames ? `<div class="photo-name">${escapeHtml(m.name)}</div>` : ''}
+    </div>
+  `).join('');
+
+  // Timer
+  const timerContainer = document.getElementById('timer-container');
+  if (cfg.timerEnabled) {
+    timerContainer.style.display = 'block';
+    gameState.timerValue = 100;
+    document.getElementById('timer-bar').style.width = '100%';
+    const tickInterval = (cfg.timerDuration * 1000) / 100;
+    gameState.timerInterval = setInterval(() => {
+      gameState.timerValue -= 1;
+      document.getElementById('timer-bar').style.width = `${gameState.timerValue}%`;
+      if (gameState.timerValue <= 0) {
+        clearInterval(gameState.timerInterval);
+        handleTimeout();
+      }
+    }, tickInterval);
+  } else {
+    timerContainer.style.display = 'none';
+  }
+
+  // Schedule funny events
+  scheduleFunnyEvent();
+}
+
+function handleAnswer(memberId) {
+  if (gameState.answered) return;
+  gameState.answered = true;
+  clearGameTimers();
+
+  const card = document.getElementById(`pc-${memberId}`);
+  const isCorrect = memberId === gameState.targetMember.id;
+
+  if (isCorrect) {
+    card.classList.add('correct');
+    gameState.combo++;
+    if (gameState.combo >= 3) {
+      gameState.comboMultiplier = 1 + Math.floor(gameState.combo / 3);
+      showComboBanner(gameState.comboMultiplier);
+    } else {
+      gameState.comboMultiplier = 1;
+    }
+
+    const timerBonus = gameState.timerValue > 70 ? 5 : gameState.timerValue > 40 ? 2 : 0;
+    const points = (10 + timerBonus) * gameState.comboMultiplier;
+    gameState.score += points;
+
+    document.getElementById('score-display').textContent = gameState.score;
+    showScorePopup(card, `+${points}`);
+    playCorrectSound();
+
+    // Candy burst
+    const rect = card.getBoundingClientRect();
+    spawnCandies(rect.left + rect.width / 2, rect.top + rect.height / 2, 8);
+
+    setTimeout(() => {
+      if (gameState.level % 5 === 0) {
+        showLevelComplete();
+      } else {
+        gameState.level++;
+        loadLevel();
+      }
+    }, 900);
+  } else {
+    card.classList.add('wrong');
+    // Highlight correct answer
+    const correctCard = document.getElementById(`pc-${gameState.targetMember.id}`);
+    if (correctCard) {
+      setTimeout(() => correctCard.classList.add('correct'), 200);
+    }
+
+    gameState.combo = 0;
+    gameState.comboMultiplier = 1;
+    gameState.lives--;
+    updateLivesDisplay();
+    playWrongSound();
+
+    if (gameState.lives <= 0) {
+      setTimeout(showGameOver, 1200);
+    } else {
+      showToast(`Try again! That's ${members.find(m => m.id === memberId)?.name || 'not'} 😄`);
+      setTimeout(() => {
+        gameState.level++;
+        loadLevel();
+      }, 1400);
+    }
+  }
+}
+
+function handleTimeout() {
+  if (gameState.answered) return;
+  gameState.answered = true;
+  gameState.lives--;
+  gameState.combo = 0;
+  updateLivesDisplay();
+  playWrongSound();
+  showToast("⏰ Time's up!");
+
+  // Show correct
+  const correctCard = document.getElementById(`pc-${gameState.targetMember.id}`);
+  if (correctCard) correctCard.classList.add('correct');
+
+  if (gameState.lives <= 0) {
+    setTimeout(showGameOver, 1200);
+  } else {
+    setTimeout(() => {
+      gameState.level++;
+      loadLevel();
+    }, 1400);
+  }
+}
+
+function updateLivesDisplay() {
+  const cfg = getModeConfig();
+  const max = settings.mode === 'easy' ? 5 : settings.mode === 'medium' ? 3 : 2;
+  const hearts = '❤️'.repeat(Math.max(0, gameState.lives)) + '🖤'.repeat(Math.max(0, max - gameState.lives));
+  document.getElementById('lives-display').textContent = hearts;
+}
+
+function showLevelComplete() {
+  clearGameTimers();
+  playCelebrationSound();
+
+  const isNewBest = gameState.score > highScore;
+  if (isNewBest) {
+    highScore = gameState.score;
+    saveStorage(STORAGE_KEYS.highScore, highScore);
+  }
+
+  // Award candies
+  const candiesEarned = Math.floor(gameState.score / 10) + gameState.level;
+  totalCandies += candiesEarned;
+  saveStorage(STORAGE_KEYS.candies, totalCandies);
+
+  const stars = gameState.combo >= 6 ? '⭐⭐⭐' : gameState.combo >= 3 ? '⭐⭐✨' : '⭐✨✨';
+  document.getElementById('stars-row').textContent = stars;
+  document.getElementById('lc-score').textContent = gameState.score;
+  document.getElementById('lc-candies').textContent = candiesEarned;
+  document.getElementById('lc-title').textContent = `Level ${gameState.level} Done! 🎉`;
+
+  const badge = document.getElementById('lc-best-badge');
+  badge.style.display = isNewBest ? 'block' : 'none';
+
+  spawnCandies(window.innerWidth / 2, window.innerHeight / 3, 25);
+  gotoScreen('screen-levelcomplete');
+}
+
+function showGameOver() {
+  clearGameTimers();
+
+  const isNewBest = gameState.score > highScore;
+  if (isNewBest) {
+    highScore = gameState.score;
+    saveStorage(STORAGE_KEYS.highScore, highScore);
+  }
+
+  const candiesEarned = Math.floor(gameState.score / 15);
+  totalCandies += candiesEarned;
+  saveStorage(STORAGE_KEYS.candies, totalCandies);
+
+  document.getElementById('go-score').textContent = gameState.score;
+  document.getElementById('go-level').textContent = gameState.level;
+  document.getElementById('go-best-badge').style.display = isNewBest ? 'block' : 'none';
+
+  gotoScreen('screen-gameover');
+}
+
+function nextLevel() {
+  gameState.level++;
+  gotoScreen('screen-game');
+  loadLevel();
+}
+
+function quitGame() {
+  clearGameTimers();
+  gameState.active = false;
+  gotoScreen('screen-home');
+}
+
+function clearGameTimers() {
+  if (gameState.timerInterval) { clearInterval(gameState.timerInterval); gameState.timerInterval = null; }
+  gameState.funnyTimers.forEach(t => clearTimeout(t));
+  gameState.funnyTimers = [];
+}
+
+// ================================================================
+// FUNNY EVENTS
+// ================================================================
+const FUNNY_EVENTS = [
+  { emoji: '🍌', name: 'flying-banana', duration: 2200 },
+  { emoji: '🐔', name: 'silly-chicken', duration: 1800 },
+  { emoji: '🦄', name: 'unicorn',       duration: 2000 },
+  { emoji: '🌈', name: 'rainbow',       duration: 2500 },
+];
+
+function scheduleFunnyEvent() {
+  if (Math.random() > 0.35) return; // 35% chance per level
+  const delay = 1500 + Math.random() * 3000;
+  const t = setTimeout(() => {
+    if (!gameState.answered) triggerFunnyEvent();
+  }, delay);
+  gameState.funnyTimers.push(t);
+}
+
+function triggerFunnyEvent() {
+  const ev = FUNNY_EVENTS[Math.floor(Math.random() * FUNNY_EVENTS.length)];
+  const el = document.createElement('div');
+  el.textContent = ev.emoji;
+  el.style.cssText = `
+    position: fixed;
+    font-size: clamp(2.5rem, 10vw, 4rem);
+    top: 50%;
+    left: -80px;
+    z-index: 250;
+    animation: flyAcross ${ev.duration}ms ease forwards;
+    pointer-events: none;
+  `;
+
+  if (!document.querySelector('#fly-style')) {
+    const st = document.createElement('style');
+    st.id = 'fly-style';
+    st.textContent = `@keyframes flyAcross {
+      from { transform: translateX(0) rotate(0deg); opacity: 1; }
+      to   { transform: translateX(calc(100vw + 120px)) rotate(720deg); opacity: 0; }
+    }`;
+    document.head.appendChild(st);
+  }
+
+  document.body.appendChild(el);
+
+  // Funny beep sound
+  if (settings.sfx) {
+    beep(220 + Math.random() * 200, 'square', 0.3, 0.15);
+    setTimeout(() => beep(440, 'sine', 0.15, 0.1), 150);
+  }
+
+  setTimeout(() => el.remove(), ev.duration + 100);
+}
+
+// ================================================================
+// CANDY PARTICLES
+// ================================================================
+const CANDY_CHARS = ['🍬', '🍭', '🍫', '🍡', '⭐', '✨', '🎉', '🌟'];
+
+function spawnCandies(x, y, count) {
+  const overlay = document.getElementById('candy-overlay');
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'candy-particle';
+    el.textContent = CANDY_CHARS[Math.floor(Math.random() * CANDY_CHARS.length)];
+    const startX = x + (Math.random() - 0.5) * 200;
+    el.style.left = `${startX}px`;
+    el.style.top = `${y}px`;
+    el.style.animationDuration = `${0.8 + Math.random() * 1.2}s`;
+    el.style.animationDelay = `${i * 0.05}s`;
+    overlay.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+  }
+}
+
+// ================================================================
+// COMBO BANNER
+// ================================================================
+function showComboBanner(multiplier) {
+  const banner = document.getElementById('combo-banner');
+  document.getElementById('combo-num').textContent = multiplier;
+  banner.classList.add('show');
+  if (settings.sfx) beep(1200, 'sine', 0.12, 0.35);
+  setTimeout(() => banner.classList.remove('show'), 1400);
+}
+
+// ================================================================
+// SCORE POPUP
+// ================================================================
+function showScorePopup(cardEl, text) {
+  const rect = cardEl.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.className = 'score-popup';
+  el.textContent = text;
+  el.style.left = `${rect.left + rect.width / 2 - 30}px`;
+  el.style.top = `${rect.top - 10}px`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+let toastTimeout = null;
+function showToast(msg, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ================================================================
+// UTILITIES
+// ================================================================
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ================================================================
+// INIT
+// ================================================================
+function init() {
+  // Apply saved settings
+  if (settings.highContrast) document.body.classList.add('high-contrast');
+  if (settings.theme && settings.theme !== 'default' && unlocks.some(u => UNLOCK_ITEMS.find(i => i.id === u && i.value === settings.theme))) {
+    document.body.classList.add(`theme-${settings.theme}`);
+  }
+
+  // Mark selected mode button
+  document.querySelectorAll('.age-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mode === settings.mode);
+  });
+
+  refreshHome();
+
+  // Start BGM on first user interaction
+  document.addEventListener('click', () => {
+    if (settings.music) startBGM();
+  }, { once: true });
+  document.addEventListener('touchstart', () => {
+    if (settings.music) startBGM();
+  }, { once: true });
+
+  // Handle visibility change (tab switch)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopBGM();
+      if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+    } else {
+      if (settings.music) startBGM();
+    }
+  });
+
+  // Handle orientation change
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => window.scrollTo(0, 0), 300);
+  });
+
+  // Service worker registration
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
+
+// Wait for voices to load
+window.speechSynthesis && window.speechSynthesis.addEventListener
+  ? window.speechSynthesis.addEventListener('voiceschanged', () => {})
+  : null;
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
